@@ -3,9 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:olx_app/DialogBox/error_dialog_box.dart';
+import 'package:olx_app/EmailVerificationScreen/email_verification_screen.dart';
 import 'package:olx_app/ForgetPassword/forget_password.dart';
 import 'package:olx_app/HomeScreen/home_screen.dart';
 import 'package:olx_app/LoginScreen/login_screen.dart';
@@ -15,6 +17,7 @@ import 'package:olx_app/widgets/already_have_an_account_check.dart';
 import 'package:olx_app/widgets/rounded_button.dart';
 import 'package:olx_app/widgets/rounded_input_field.dart';
 import 'package:olx_app/widgets/rounded_password_field.dart';
+import 'package:olx_app/widgets/text_feild_container.dart';
 
 import '../widgets/global_var.dart';
 
@@ -27,7 +30,6 @@ class _SignupBodyState extends State<SignupBody> {
   File? _image;
   bool isLoading = false;
   String userPhotoUrl = '';
-  final signUpFormKey = GlobalKey<FormState>();
   final TextEditingController _nameEditingController = TextEditingController();
   final TextEditingController _emailEditingController = TextEditingController();
   final TextEditingController _passwordEditingController =
@@ -110,70 +112,98 @@ class _SignupBodyState extends State<SignupBody> {
         });
   }
 
-  void submitFormOnSignUp() async {
-    final isValid = signUpFormKey.currentState!.validate();
-    if (isValid) {
-      if (_image == null) {
-        showDialog(
-            context: context,
-            builder: (context) {
-              return  ErrorAlertDialog(
-                message: "Please pick an Image",
-              );
-            });
+  @override
+  Widget build(BuildContext context) {
+    final signUpFormKey = GlobalKey<FormState>();
 
+    void submitFormOnSignUp() async {
+      final isValid = signUpFormKey.currentState!.validate();
+      if (isValid) {
+        if (_image == null) {
+          showDialog(
+              context: context,
+              builder: (context) {
+                return ErrorAlertDialog(
+                  message: "Please pick an Image",
+                );
+              });
+
+          return;
+        }
+      } else {
         return;
       }
 
-    }else{
-      return;
-    }
-
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      await _auth.createUserWithEmailAndPassword(
-          email: _emailEditingController.text.trim().toLowerCase(),
-          password: _passwordEditingController.text.trim());
-      final User? user = _auth.currentUser;
-      uid = user!.uid;
-
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child("userImage")
-          .child(uid + '.jpg');
-      await ref.putFile(_image!);
-      userPhotoUrl = await ref.getDownloadURL();
-      await FirebaseFirestore.instance.collection("users").doc(uid).set({
-        'userName': _nameEditingController.text.trim(),
-        "id": uid,
-        'userNumber': _phoneEditingController.text.trim(),
-        'userEmail': _emailEditingController.text.trim(),
-        'userImage': userPhotoUrl,
-        'time': DateTime.now(),
-        'status': "approved"
-      });
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomeScreen(),
-        ),
-      );
-
-    } catch (e) {
       setState(() {
-        isLoading = false;
+        isLoading = true;
       });
-      print(e.toString()+"##############################################");
-      showDialog(context: context, builder: (context)=>ErrorAlertDialog(message: e.toString()));
-    }
-  }
 
-  @override
-  Widget build(BuildContext context) {
+
+
+
+
+      //   userCredential.user!.sendEmailVerification();
+      //   Future.delayed(Duration(minutes: 1),(){
+      //     if(!userCredential.user!.emailVerified)
+      //     {
+      //       userCredential.user!.delete();
+      //       Fluttertoast.showToast(msg: 'Your Email is not verified');
+      //       return;
+      //     }
+      //
+      //   });
+      //
+      //
+      //
+      // }catch(e){
+      //
+      // }
+
+
+
+      try {
+        await _auth
+            .createUserWithEmailAndPassword(
+            email: _emailEditingController.text.trim().toLowerCase(),
+            password: _passwordEditingController.text.trim());
+
+
+        final User? user = _auth.currentUser;
+        uid = user!.uid;
+
+        final ref = FirebaseStorage.instance
+            .ref()
+            .child("userImage")
+            .child(uid + '.jpg');
+        await ref.putFile(_image!);
+        userPhotoUrl = await ref.getDownloadURL();
+        await FirebaseFirestore.instance.collection("users").doc(uid).set({
+          'userName': _nameEditingController.text.trim(),
+          "id": uid,
+          'userNumber': _phoneEditingController.text.trim(),
+          'userEmail': _emailEditingController.text.trim(),
+          'userImage': userPhotoUrl,
+          'time': DateTime.now(),
+          'status': "approved"
+        });
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EmailVerificationScreen(),
+          ),
+        );
+      } catch (e) {
+        setState(() {
+          isLoading = false;
+        });
+        print(e.toString() + "##############################################");
+        showDialog(
+            context: context,
+            builder: (context) => ErrorAlertDialog(message: e.toString()));
+      }
+    }
+
     double screenHeight = MediaQuery.of(context).size.height,
         screenWidth = MediaQuery.of(context).size.width;
 
@@ -181,18 +211,18 @@ class _SignupBodyState extends State<SignupBody> {
       child: SignupBackground(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Form(
-                key: signUpFormKey,
-                child: InkWell(
+          child: Form(
+            key: signUpFormKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                InkWell(
                   onTap: () {
                     _showImageDialog();
                   },
                   child: CircleAvatar(
                     radius: screenWidth * .2,
-                    backgroundColor: Colors.deepPurple.withOpacity(.4),
+                    backgroundColor:  MyColors.luckyPoint.withOpacity(.4),
                     backgroundImage: _image == null ? null : FileImage(_image!),
                     child: _image == null
                         ? Icon(
@@ -203,84 +233,114 @@ class _SignupBodyState extends State<SignupBody> {
                         : null,
                   ),
                 ),
-              ),
-              SizedBox(
-                height: screenHeight * .02,
-              ),
-
-              RoundedInputField(
-                  hintText: "Name",
-                  icon: Icons.person,
-                  onChanged: (val) {
-                    _nameEditingController.text = val;
-                  }),
-              RoundedInputField(
-                  hintText: "Email",
-                  icon: Icons.email,
-                  onChanged: (val) {
-                    _emailEditingController.text = val;
-                  }),
-              RoundedPasswordField(onChanged: (val) {
-                _passwordEditingController.text = val;
-              }),
-              RoundedInputField(
-                  hintText: "phone",
-                  icon: Icons.phone,
-                  onChanged: (val) {
-                    _phoneEditingController.text = val;
-                  }),
-
-
-              const SizedBox(
-                height: 5,
-              ),
-
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ForgetPasswordScreen()));
-                  },
-                  child: Text(
-                    "Forget Password?",
-                    style: TextStyle(fontSize: 15, fontStyle: FontStyle.italic),
+                SizedBox(
+                  height: screenHeight * .02,
+                ),
+                RoundedInputField(
+                    hintText: "Name",
+                    icon: Icons.person,
+                    onChanged: (val) {
+                      _nameEditingController.text = val;
+                    }),
+                RoundedInputField(
+                    hintText: "Email",
+                    icon: Icons.email,
+                    onChanged: (val) {
+                      _emailEditingController.text = val;
+                    }),
+                RoundedPasswordField(onChanged: (val) {
+                  _passwordEditingController.text = val;
+                }),
+                RoundedInputField(
+                    hintText: "phone",
+                    icon: Icons.phone,
+                    onChanged: (val) {
+                      _phoneEditingController.text = val;
+                    }),
+                const SizedBox(
+                  height: 5,
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ForgetPasswordScreen()));
+                    },
+                    child: Text(
+                      "Forget Password?",
+                      style:
+                          TextStyle(fontSize: 15, fontStyle: FontStyle.italic,color:MyColors.luckyPoint),
+                    ),
                   ),
                 ),
-              ),
-              isLoading
-                  ? Center(
-                      child: Container(
-                        height: 50,
-                        width: 50,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 6,
-                          color: MyColors.luckyPoint.withOpacity(.7),
+                isLoading
+                    ? Center(
+                        child: Container(
+                          height: 50,
+                          width: 50,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 6,
+                            color: MyColors.luckyPoint.withOpacity(.7),
+                          ),
                         ),
+                      )
+                    : RoundedButton(
+                        text: "Sign Up",
+                        press: () {
+                          // try{
+                          //   await _auth
+                          //       .createUserWithEmailAndPassword(
+                          //       email: _emailEditingController.text.trim().toLowerCase(),
+                          //       password: _passwordEditingController.text.trim())
+                          //       .whenComplete(() async {
+                          //    await _auth.currentUser!.sendEmailVerification().whenComplete(() {
+                          //       isLoading=true;
+                          //       setState(() {
+                          //       });
+                          //       Future.delayed(Duration(minutes:1 ,),(){
+                          //         if (!_auth.currentUser!.emailVerified) {
+                          //           Fluttertoast.showToast(msg: 'Your Email is Not verified',backgroundColor: Colors.redAccent,textColor: Colors.black);
+                          //           _auth.currentUser!.delete();
+                          //           isLoading=false;
+                          //           setState(() {
+                          //           });
+                          //         }else{
+                          //
+                          //           submitFormOnSignUp();
+                          //
+                          //         }
+                          //       });
+                          //
+                          //     });
+                          //   });
+                          //
+                          // }catch(e)
+                          // {
+                          //   print('================================'+e.toString());
+                          // }
+
+                          submitFormOnSignUp();
+
+                        }),
+                SizedBox(
+                  height: screenHeight * .03,
+                ),
+                AlreadyHaveAnAccountCheck(
+                  press: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => LoginScreen(),
                       ),
-                    )
-                  : RoundedButton(
-                      text: "Sign Up",
-                      press: () {
-                        submitFormOnSignUp();
-                      }),
-              SizedBox(
-                height: screenHeight * .03,
-              ),
-              AlreadyHaveAnAccountCheck(
-                press: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => LoginScreen(),
-                    ),
-                  );
-                },
-                login: false,
-              )
-            ],
+                    );
+                  },
+                  login: false,
+                )
+              ],
+            ),
           ),
         ),
       ),

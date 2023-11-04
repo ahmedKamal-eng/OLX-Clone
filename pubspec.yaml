@@ -39,6 +39,8 @@ dependencies:
   firebase_auth: ^4.10.0
   cloud_firestore: ^4.9.2
   flutter_bloc: ^8.1.3
+  google_sign_in: ^6.1.5
+  flutterflow_paginate_firestore:
   timeago:
   intl:
   image_picker:
@@ -52,6 +54,9 @@ dependencies:
   url_launcher:
   maps_launcher:
   uuid:
+  connectivity_plus:
+
+
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:olx_app/utils/my_colors.dart';
 
 class SignupBackground extends StatelessWidget {
 
@@ -19,13 +20,13 @@ class SignupBackground extends StatelessWidget {
             top: 0,
             left: 0,
             height: size.height * .15,
-            child: Image.asset("Assets/images/signup_top.png",color: Colors.deepPurple.shade300,),),
+            child: Image.asset("Assets/images/signup_top.png",color: MyColors.luckyPoint.withOpacity(.6),),),
           Positioned(
             bottom: 0,
             left: 0,
             height: size.height * .1,
 
-            child: Image.asset("Assets/images/main_bottom.png",color: Colors.deepPurple.shade300,),),
+            child: Image.asset("Assets/images/main_bottom.png",color:  MyColors.luckyPoint.withOpacity(.6),),),
           child
         ],
       ),

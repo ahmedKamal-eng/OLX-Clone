@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:olx_app/utils/my_colors.dart';
 
 class WelcomeBackground extends StatelessWidget {
 
@@ -20,7 +21,7 @@ class WelcomeBackground extends StatelessWidget {
             left: 0,
             child: Image.asset(
               "Assets/images/main_top.png",
-              color: Colors.deepPurple.shade300,
+              color: MyColors.luckyPoint.withOpacity(.6),
               width: size.width * .3,
             ),
           ),
@@ -29,7 +30,7 @@ class WelcomeBackground extends StatelessWidget {
             left: 0,
             child: Image.asset(
               "Assets/images/main_bottom.png",
-              color: Colors.deepPurple.shade300,
+              color: MyColors.luckyPoint.withOpacity(.6),
               width: size.width * .2,
             ),
           ),

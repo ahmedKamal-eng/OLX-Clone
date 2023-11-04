@@ -17,6 +17,7 @@ class ProductsWidgets extends StatelessWidget {
       return StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('items')
+        .orderBy('time',descending: true)
             .where('id', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
             .where('status', isEqualTo: "approved")
             .snapshots(),

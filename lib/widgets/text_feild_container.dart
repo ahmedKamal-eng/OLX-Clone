@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:olx_app/utils/my_colors.dart';
 
 
 class TextFieldContainer extends StatelessWidget {
@@ -15,7 +16,8 @@ class TextFieldContainer extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 20),
       width: size.width * .8,
       decoration: BoxDecoration(
-        color: Colors.deepPurple.withOpacity(.4),
+        // color: Colors.deepPurple.withOpacity(.4),
+        color: MyColors.swanWhite,
         borderRadius: BorderRadius.circular(29),
       ),
       child: child,
